@@ -1,5 +1,8 @@
 # RedoxBid
 
+## 🎈 Online Demo
+👉 [Click here to launch the app](https://redoxbid-energy-storage.streamlit.app)
+
 **Multi-Market Optimization for Redox Flow Battery Storage**
 
 RedoxBid is a research-oriented decision-support prototype for exploring how a
