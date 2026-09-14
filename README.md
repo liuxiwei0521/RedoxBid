@@ -1,7 +1,6 @@
 # RedoxBid
 
-## 🎈 Online Demo
-👉 [Click here to launch the app](https://redoxbid-energy-storage.streamlit.app)
+## 👉 Online Demo [Click here to launch the app](https://redoxbid-energy-storage.streamlit.app)
 
 **Multi-Market Optimization for Redox Flow Battery Storage**
 
