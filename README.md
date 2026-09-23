@@ -13,6 +13,18 @@ scenario-level performance comparisons.
 RedoxBid does **not** connect to an exchange, submit orders, or execute
 real-world transactions.
 
+## Quick online demo
+
+1. Open the online application.
+2. Keep **Use built-in example** selected to run the bundled synthetic
+   day-ahead price dataset.
+3. Select **Upload CSV** only when testing your own 96-interval price file.
+4. Choose the day-ahead-only or three-strategy comparison workflow, then start
+   the solve.
+
+The bundled day-ahead and regulation datasets are synthetic demonstration
+data. They are not measurements from a real station or electricity market.
+
 ## What the project demonstrates
 
 - A 24-hour, 96-interval day-ahead battery scheduling model.
