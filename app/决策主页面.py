@@ -45,6 +45,7 @@ try:
         build_market_comparison,
         build_regulation_market_frame,
     )
+    from utils.input_sources import load_day_ahead_frame
     from utils.regulation_data import normalize_regulation_history
     from utils.visualization import generate_comprehensive_visualization
     from utils.database import init_db, save_decision_record, load_station_profile
@@ -121,6 +122,9 @@ from ui import (
 
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+SAMPLE_DAY_AHEAD_PATH = os.path.join(
+    PROJECT_ROOT, "data", "synthetic_day_ahead_price_forecast.csv"
+)
 SAMPLE_REGULATION_PATH = os.path.join(
     PROJECT_ROOT, "data", "synthetic_regulation_history.csv"
 )
@@ -734,15 +738,45 @@ def main():
                 )
 
         uploaded_regulation_file = None
+        uploaded_file = None
+        price_data_source = "bundled"
         input_col, regulation_col, summary_col = st.columns(
             [1.25, 1.25 if comparison_mode else 0.01, 0.9]
         )
         with input_col:
-            uploaded_file = st.file_uploader(
-                t("field.price_csv"),
-                type=["csv"],
-                key="price_forecast_file",
+            price_data_source = st.radio(
+                bi(language, "日前电价数据来源", "Day-ahead price data source"),
+                options=("bundled", "upload"),
+                format_func=lambda source: bi(
+                    language,
+                    "使用内置样例" if source == "bundled" else "上传 CSV",
+                    "Use built-in example" if source == "bundled" else "Upload CSV",
+                ),
+                horizontal=True,
+                key="day_ahead_data_source",
             )
+            if price_data_source == "bundled":
+                st.caption(
+                    bi(
+                        language,
+                        "已选择内置的96时段合成日前电价数据，仅用于演示和测试。",
+                        "Using the bundled 96-interval synthetic day-ahead price dataset for demonstration and testing only.",
+                    )
+                )
+                with open(SAMPLE_DAY_AHEAD_PATH, "rb") as sample_file:
+                    st.download_button(
+                        bi(language, "下载日前样例 CSV", "Download sample CSV"),
+                        data=sample_file.read(),
+                        file_name="synthetic_day_ahead_price_forecast.csv",
+                        mime="text/csv",
+                        key="download_day_ahead_sample",
+                    )
+            else:
+                uploaded_file = st.file_uploader(
+                    t("field.price_csv"),
+                    type=["csv"],
+                    key="price_forecast_file",
+                )
         with regulation_col:
             if comparison_mode:
                 uploaded_regulation_file = st.file_uploader(
@@ -783,12 +817,19 @@ def main():
             key="solve_decision",
         )
 
-    if solve_button and uploaded_file is None:
-        st.warning(t("input.file_missing"))
+    price_input_frame = None
+    if solve_button:
+        price_input_frame = load_day_ahead_frame(
+            price_data_source,
+            uploaded_file=uploaded_file,
+            project_root=PROJECT_ROOT,
+        )
+        if price_input_frame is None:
+            st.warning(t("input.file_missing"))
 
-    if solve_button and uploaded_file is not None:
+    if solve_button and price_input_frame is not None:
         try:
-            price_forecast = validate_day_ahead_prices(pd.read_csv(uploaded_file))
+            price_forecast = validate_day_ahead_prices(price_input_frame)
             battery_params = validate_battery_params(battery_params)
 
             st.subheader(t("progress.title"))
